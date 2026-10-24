@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Menu-bar-only app: no Dock icon (the activation policy is also set in code). -->
+	<key>LSUIElement</key>
+	<true/>
+
+	<!-- Sparkle 2. PLACEHOLDER feed and key: replace both before shipping (see README). -->
+	<key>SUFeedURL</key>
+	<string>https://example.com/thorreborn/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>TD1sNYdS0fNp+xRX47GCYnGbKSNnB6l1vX+N1UHuESc=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<false/>
+</dict>
+</plist>
