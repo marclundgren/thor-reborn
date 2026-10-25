@@ -8,13 +8,13 @@ ThorReborn is a from-scratch rewrite of [Thor](https://github.com/gbammc/Thor) b
 
 Get **[ThorReborn.zip](https://github.com/marclundgren/thor-reborn/releases/latest/download/ThorReborn.zip)** from the [latest release](https://github.com/marclundgren/thor-reborn/releases/latest), unzip it, and move ThorReborn.app to Applications. Website: https://marclundgren.github.io/thor-reborn/
 
-Release builds are universal (Apple Silicon and Intel) but ad-hoc signed, not notarized, so macOS blocks the first launch. Open the app once, then click **Open Anyway** in System Settings › Privacy & Security. Or run:
+Release builds are universal (Apple Silicon and Intel), signed with a self-signed certificate rather than an Apple Developer ID, and not notarized, so macOS blocks the first launch. Open the app once, then click **Open Anyway** in System Settings › Privacy & Security. Or run:
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/ThorReborn.app
 ```
 
-From 1.1.0 on, ThorReborn updates itself through Sparkle (Check for Updates in the menu, or automatic checks you can turn on in Settings). Version 1.0.0 shipped with a placeholder feed, so 1.0.0 users need to download a newer version by hand once.
+From 1.1.1 on, ThorReborn updates itself through Sparkle (Check for Updates in the menu, or automatic checks you can turn on in Settings). Version 1.0.0 shipped with a placeholder feed, so 1.0.0 users need to download a newer version by hand once.
 
 ## Features
 
@@ -136,7 +136,8 @@ ThorReborn uses Sparkle 2's `SPUStandardUpdaterController`, wrapped in `UpdaterS
 
 - **Feed:** `SUFeedURL` is `https://marclundgren.github.io/thor-reborn/appcast.xml`, which is `docs/appcast.xml` served by GitHub Pages.
 - **Downloads:** each feed item points at the `ThorReborn.zip` asset of a GitHub release.
-- **Signing:** every update is EdDSA-signed. `SUPublicEDKey` in `Config/Info.plist` is the public key. The private key lives only in the maintainer's login keychain, under the account `dev.thorreborn.ThorReborn`. Sparkle refuses any update whose signature doesn't match, which is what makes updating an ad-hoc signed app safe.
+- **Signing:** every update is EdDSA-signed. `SUPublicEDKey` in `Config/Info.plist` is the public key. The private key lives only in the maintainer's login keychain, under the account `dev.thorreborn.ThorReborn`. Sparkle refuses any update whose signature doesn't match.
+- **Code signing:** release builds are re-signed with a self-signed identity, "ThorReborn Release Signing", kept in the maintainer's login keychain. Sparkle also requires the new version's code signature to satisfy the old one's designated requirement. An ad-hoc signature is tied to the exact binary, so it fails that check on every update. That's why 1.1.0 was withdrawn. A certificate-based signature passes, and macOS keeps the user's Accessibility grant across updates too.
 
 ### Releasing an update
 
@@ -152,13 +153,15 @@ The script does the following:
 5. Commits and tags, then publishes the GitHub release with the zip.
 6. Pushes, which redeploys the feed.
 
-**Back up the private key.** Without it you can't sign updates, and existing installs can never update again. To export it:
+**Back up both keys.** Without either one you can't publish updates that existing installs will accept. To export the Sparkle key:
 
 ```sh
 <DerivedData>/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys --account dev.thorreborn.ThorReborn -x sparkle-private-key.txt
 ```
 
-Store that file in a password manager, then delete it. On a new Mac, import it with `generate_keys --account dev.thorreborn.ThorReborn -f sparkle-private-key.txt`.
+Then export the signing identity: in Keychain Access › My Certificates, right-click **ThorReborn Release Signing** › Export, and save it as a password-protected `.p12` file.
+
+Store both files in a password manager, then delete them. On a new Mac, import the Sparkle key with `generate_keys --account dev.thorreborn.ThorReborn -f sparkle-private-key.txt`, and the identity with `security import ThorReborn.p12 -k ~/Library/Keychains/login.keychain-db -T /usr/bin/codesign`.
 
 ## Project layout
 

@@ -7,14 +7,5 @@
     <description>ThorReborn updates</description>
     <language>en</language>
     <!-- releases, newest first -->
-    <item>
-      <title>1.1.0</title>
-      <pubDate>Sun, 25 Oct 2026 07:14:04 GMT</pubDate>
-      <sparkle:version>2</sparkle:version>
-      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
-      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<p>ThorReborn now updates itself.</p><ul><li>Check for Updates works, from the menu bar or Settings, signed with Sparkle.</li><li>New &quot;Automatically check for updates&quot; setting.</li><li>App icons for symlinked apps (like Safari) no longer show an alias arrow.</li></ul><p>Coming from 1.0.0? That version can&#x27;t update itself, so download this one by hand, quit ThorReborn, and replace the app in Applications. Future updates install from inside the app.</p>]]></description>
-      <enclosure url="https://github.com/marclundgren/thor-reborn/releases/download/v1.1.0/ThorReborn.zip" type="application/octet-stream" sparkle:edSignature="npPX4lpNZHNihJVDBqWEADMgiEwoUuEyD3XgvkZojTIY4vrCvwOcSonXjDdQxi/u62wxp4yJnquRQF8T70knAw==" length="2253480"/>
-    </item>
   </channel>
 </rss>

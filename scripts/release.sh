@@ -6,14 +6,16 @@
 # notes.md is Markdown (paragraphs and "- " bullets). It becomes the GitHub release notes
 # and, converted to HTML, the update notes Sparkle shows in the app.
 #
-# Needs: Xcode, `gh` logged in, and the Sparkle EdDSA private key in the login keychain
-# (account dev.thorreborn.ThorReborn). Run from a clean main branch.
+# Needs: Xcode, `gh` logged in, and two things in the login keychain: the Sparkle EdDSA
+# private key (account dev.thorreborn.ThorReborn) and the self-signed code signing
+# identity "ThorReborn Release Signing". Run from a clean main branch.
 set -euo pipefail
 
 VERSION=${1:?usage: scripts/release.sh <version> <notes.md>}
 NOTES=${2:?usage: scripts/release.sh <version> <notes.md>}
 REPO=marclundgren/thor-reborn
 KEY_ACCOUNT=dev.thorreborn.ThorReborn
+SIGN_IDENTITY=${SIGN_IDENTITY:-ThorReborn Release Signing}
 
 cd "$(dirname "$0")/.."
 export DEVELOPER_DIR=${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}
@@ -35,6 +37,16 @@ xcodebuild -scheme ThorReborn -configuration Release -destination 'generic/platf
 APP=$DD/Build/Products/Release/ThorReborn.app
 [[ "$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' $APP/Contents/Info.plist)" == "$BUILD" ]] \
   || { echo "Build failed." >&2; git checkout $PROJECT; exit 1; }
+
+# Re-sign with the stable release identity. Ad-hoc signatures are tied to the binary's
+# hash, so Sparkle would reject every update ("code signature doesn't match") and macOS
+# would drop the user's Accessibility grant on each one. A certificate-based signature
+# keeps both working across versions.
+codesign --force --deep --preserve-metadata=entitlements -s "$SIGN_IDENTITY" $APP
+codesign --verify --deep --strict $APP
+codesign -d -r- $APP 2>&1 | grep -q 'certificate leaf' \
+  || { echo "Not signed with $SIGN_IDENTITY." >&2; git checkout $PROJECT; exit 1; }
+
 ZIP=$DD/ThorReborn.zip
 rm -f $ZIP
 ditto -c -k --sequesterRsrc --keepParent $APP $ZIP
