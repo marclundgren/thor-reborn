@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThorReborn</title>
+<meta name="description" content="A free, open-source macOS menu-bar app that launches, switches to, and hides apps with global keyboard shortcuts.">
+<meta property="og:title" content="ThorReborn">
+<meta property="og:description" content="Switch to any Mac app with one keyboard shortcut. Free and open source.">
+<meta property="og:image" content="icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+  :root {
+    --bg: #fbfaf8;
+    --surface: #ffffff;
+    --text: #1d1d1f;
+    --muted: #6e6e73;
+    --line: #e6e3de;
+    --accent: #c2410c;
+    --accent-ink: #ffffff;
+    --key-bg: #ffffff;
+    --key-edge: #d4d0c9;
+    --code-bg: #f2efea;
+    --glow: rgba(194, 65, 12, 0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141312;
+      --surface: #1d1c1a;
+      --text: #f2f0ed;
+      --muted: #a29e98;
+      --line: #2f2d2a;
+      --accent: #fb923c;
+      --accent-ink: #1a0d04;
+      --key-bg: #2a2826;
+      --key-edge: #121110;
+      --code-bg: #24221f;
+      --glow: rgba(251, 146, 60, 0.12);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141312;
+    --surface: #1d1c1a;
+    --text: #f2f0ed;
+    --muted: #a29e98;
+    --line: #2f2d2a;
+    --accent: #fb923c;
+    --accent-ink: #1a0d04;
+    --key-bg: #2a2826;
+    --key-edge: #121110;
+    --code-bg: #24221f;
+    --glow: rgba(251, 146, 60, 0.12);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  code, kbd, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+  /* Nav */
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
+  nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--text); text-decoration: none; }
+  nav .brand img { width: 28px; height: 28px; }
+  nav .links { display: flex; gap: 20px; font-size: 15px; }
+  nav .links a { color: var(--muted); text-decoration: none; }
+  nav .links a:hover { color: var(--text); }
+
+  /* Hero */
+  .hero { text-align: center; padding: 56px 0 40px; position: relative; }
+  .hero::before {
+    content: ""; position: absolute; inset: -40px 0 auto; height: 420px; z-index: -1;
+    background: radial-gradient(closest-side, var(--glow), transparent);
+  }
+  .hero .icon { width: 128px; height: 128px; filter: drop-shadow(0 12px 24px rgba(0,0,0,.18)); }
+  h1 { font-size: clamp(40px, 7vw, 64px); line-height: 1.05; letter-spacing: -0.03em; margin: 20px 0 14px; }
+  .tagline { font-size: clamp(19px, 2.6vw, 23px); color: var(--muted); max-width: 640px; margin: 0 auto 32px; }
+  .cta { display: inline-flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 17px; text-decoration: none;
+    border: 1px solid var(--line); color: var(--text); background: var(--surface);
+  }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .btn svg { width: 18px; height: 18px; }
+  .meta { margin-top: 16px; font-size: 14px; color: var(--muted); }
+
+  /* Demo */
+  .demo {
+    margin: 48px auto 0; max-width: 560px; text-align: left;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.08); overflow: hidden;
+  }
+  .demo .bar { display: flex; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .demo .bar i { width: 12px; height: 12px; border-radius: 50%; background: var(--line); }
+  .row { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: 0; }
+  .row .app { width: 36px; height: 36px; border-radius: 9px; flex: none; display: grid; place-items: center; font-size: 19px; color: #fff; font-weight: 700; }
+  .row .name { flex: 1; font-weight: 500; }
+  .keys { display: inline-flex; gap: 4px; }
+  kbd {
+    display: inline-block; min-width: 28px; padding: 3px 7px; text-align: center;
+    font-size: 14px; line-height: 1.4; border-radius: 6px;
+    background: var(--key-bg); border: 1px solid var(--line); box-shadow: 0 2px 0 var(--key-edge);
+    color: var(--text);
+  }
+
+  /* Sections */
+  section { padding: 64px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: clamp(28px, 4vw, 36px); letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { color: var(--muted); margin: 0 0 36px; max-width: 640px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  .card h3 { margin: 0 0 6px; font-size: 18px; }
+  .card p { margin: 0; color: var(--muted); font-size: 16px; }
+
+  ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; gap: 14px; }
+  ol.steps li { counter-increment: s; position: relative; padding: 18px 20px 18px 64px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+  ol.steps li::before {
+    content: counter(s); position: absolute; left: 20px; top: 18px;
+    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 15px;
+  }
+  ol.steps strong { display: block; margin-bottom: 2px; }
+  ol.steps span { color: var(--muted); font-size: 16px; }
+  pre { background: var(--code-bg); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-size: 14px; margin: 10px 0 0; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 16px; }
+
+  footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; }
+
+  @media (max-width: 560px) {
+    nav .links a.hide-sm { display: none; }
+    .row { padding: 12px 14px; gap: 12px; }
+    kbd { min-width: 24px; padding: 2px 5px; font-size: 13px; }
+    ol.steps li { padding-left: 58px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="#"><img src="favicon.png" alt=""> ThorReborn</a>
+      <div class="links">
+        <a class="hide-sm" href="#features">Features</a>
+        <a class="hide-sm" href="#install">Install</a>
+        <a href="https://github.com/marclundgren/thor-reborn">GitHub</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <img class="icon" src="icon.png" alt="ThorReborn app icon">
+      <h1>One shortcut per app.</h1>
+      <p class="tagline">ThorReborn lives in your menu bar and switches to any app with a single keystroke. Press it again to hide the app.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/marclundgren/thor-reborn/releases/latest/download/ThorReborn.zip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 10l6 6 6-6M5 20h14"/></svg>
+          Download for Mac
+        </a>
+        <a class="btn" href="https://github.com/marclundgren/thor-reborn">View source</a>
+      </div>
+      <p class="meta">Free and open source · macOS 14 or later · Apple Silicon and Intel</p>
+
+      <div class="demo" aria-label="Example shortcut assignments">
+        <div class="bar"><i></i><i></i><i></i></div>
+        <div class="row"><div class="app" style="background:#2b7de9">S</div><div class="name">Safari</div><span class="keys"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd></span></div>
+        <div class="row"><div class="app" style="background:#1f2937">T</div><div class="name">Terminal</div><span class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>T</kbd></span></div>
+        <div class="row"><div class="app" style="background:#e9a23b">N</div><div class="name">Notes</div><span class="keys"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>N</kbd></span></div>
+        <div class="row"><div class="app" style="background:#16a34a">M</div><div class="name">Messages</div><span class="keys"><kbd>⌥</kbd><kbd>⌘</kbd><kbd>M</kbd></span></div>
+      </div>
+    </header>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <h2>No Dock icon. No app switcher. Just keys.</h2>
+      <p class="lede">Give each app you use a shortcut, and never hunt for a window again.</p>
+      <div class="grid">
+        <div class="card"><h3>Launch, switch, hide</h3><p>A shortcut opens the app if it isn't running, brings it forward if it is, and hides it if it's already in front.</p></div>
+        <div class="card"><h3>Find any app</h3><p>Search everything in your Applications folders and anything Spotlight knows about, then record a shortcut for it.</p></div>
+        <div class="card"><h3>Conflict checks</h3><p>If a shortcut is already taken by another app in your list, ThorReborn asks before moving it.</p></div>
+        <div class="card"><h3>Pause on demand</h3><p>Turn all shortcuts off from the menu, or double-press a modifier key to pause them for a moment.</p></div>
+        <div class="card"><h3>Starts with your Mac</h3><p>Optional launch at login. Hide the menu bar icon too, and bring it back with <kbd>⇧</kbd><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>T</kbd>.</p></div>
+        <div class="card"><h3>Works with Thor</h3><p>Export and import your shortcuts as JSON. Files from the original Thor import directly.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="wrap">
+      <h2>Install</h2>
+      <p class="lede">Takes about a minute. ThorReborn isn't notarized by Apple yet, so macOS asks you to confirm the first launch.</p>
+      <ol class="steps">
+        <li><strong>Download and unzip</strong><span><a href="https://github.com/marclundgren/thor-reborn/releases/latest/download/ThorReborn.zip">Download ThorReborn.zip</a>, double-click it, and drag <b>ThorReborn.app</b> into your Applications folder.</span></li>
+        <li><strong>Allow the first launch</strong><span>Open ThorReborn. When macOS says it can't verify the developer, click <b>Done</b>, go to System Settings › Privacy &amp; Security, scroll down, and click <b>Open Anyway</b>.</span>
+          <details><summary>Prefer the Terminal?</summary><pre>xattr -dr com.apple.quarantine /Applications/ThorReborn.app</pre></details>
+        </li>
+        <li><strong>Turn on Accessibility</strong><span>ThorReborn walks you through this. It's needed to notice the deactivate-key double-press while other apps are in front.</span></li>
+        <li><strong>Add your apps</strong><span>Click <b>+</b>, pick apps, and press a key combination in each row. Look for the hammer in your menu bar.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Built on Thor</h2>
+      <p class="lede" style="margin-bottom:0">ThorReborn is a from-scratch rewrite of <a href="https://github.com/gbammc/Thor">Thor</a> by Alvin Zhu, in Swift 6 and SwiftUI. It keeps Thor's behavior and file format and is MIT licensed like the original. Found a bug? <a href="https://github.com/marclundgren/thor-reborn/issues">Open an issue</a>.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>ThorReborn · MIT License</span>
+      <span><a href="https://github.com/marclundgren/thor-reborn/releases">Releases</a> · <a href="https://github.com/marclundgren/thor-reborn">Source</a> · <a href="https://github.com/gbammc/Thor">Original Thor</a></span>
+    </div>
+  </footer>
+</body>
+</html>

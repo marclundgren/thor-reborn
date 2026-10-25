@@ -4,6 +4,16 @@ A menu-bar app for macOS that switches to apps with global keyboard shortcuts. P
 
 ThorReborn is a from-scratch rewrite of [Thor](https://github.com/gbammc/Thor) by Alvin Zhu (MIT license). It aims for full functional parity, built with Swift 6, SwiftUI, Swift Package Manager, [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) and [Sparkle 2](https://sparkle-project.org). It drops Thor's CocoaPods setup, storyboards, MASShortcut, and LaunchAtLogin helper app. It reads and writes Thor's `apps.json` format, so you can import an export from the original.
 
+## Download
+
+Get **[ThorReborn.zip](https://github.com/marclundgren/thor-reborn/releases/latest/download/ThorReborn.zip)** from the [latest release](https://github.com/marclundgren/thor-reborn/releases/latest), unzip it, and move ThorReborn.app to Applications. Website: https://marclundgren.github.io/thor-reborn/
+
+Release builds are universal (Apple Silicon and Intel) but ad-hoc signed, not notarized, so macOS blocks the first launch. Open the app once, then click **Open Anyway** in System Settings › Privacy & Security. Or run:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/ThorReborn.app
+```
+
 ## Features
 
 - Runs from the menu bar only (no Dock icon). The menu has: Show Apps, Enable/Disable Shortcuts, Export/Import Shortcuts, Check for Updates, the version, Privacy Policy, and Quit.
@@ -137,6 +147,7 @@ ThorReborn/
   Support/                   AppSettings, shortcut bridging, DEBUG self-test
   Assets.xcassets            App icon (regenerate with `swift scripts/make-app-icon.swift`)
 Packages/ThorRebornCore/     AssignedApp, ThorShortcut (string parse/serialize), AppAssignmentStore + tests
+docs/                        Landing page, served by GitHub Pages
 ```
 
 ## License
