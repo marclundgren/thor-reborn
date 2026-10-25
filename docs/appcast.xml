@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sparkle update feed. Items are added by scripts/release.sh. -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>ThorReborn</title>
+    <link>https://marclundgren.github.io/thor-reborn/appcast.xml</link>
+    <description>ThorReborn updates</description>
+    <language>en</language>
+    <!-- releases, newest first -->
+  </channel>
+</rss>

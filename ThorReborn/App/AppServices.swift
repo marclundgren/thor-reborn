@@ -10,6 +10,7 @@ final class AppServices {
     let discovery = AppDiscoveryService()
     let accessibility = AccessibilityService()
     let launchAtLogin = LaunchAtLoginService()
+    let updater = UpdaterService()
     let hotkeys: HotkeyService
     let deactivateKey: DeactivateKeyMonitor
     let importExport: ImportExportService

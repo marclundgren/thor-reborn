@@ -11,7 +11,11 @@ struct MainWindowView: View {
         var id: String { rawValue }
     }
 
-    @State private var tab: Tab = .apps
+    @State private var tab: Tab
+
+    init(initialTab: Tab = .apps) {
+        _tab = State(initialValue: initialTab)
+    }
 
     var body: some View {
         VStack(spacing: 0) {

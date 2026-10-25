@@ -14,15 +14,19 @@ final class WindowCoordinator {
     }
 
     func showMainWindow() {
-        let window = mainWindow ?? makeWindow(
-            title: "ThorReborn",
-            autosaveName: "MainWindow",
-            size: NSSize(width: 520, height: 560),
-            style: [.titled, .closable, .miniaturizable, .resizable],
-            content: MainWindowView()
-        )
+        let window = mainWindow ?? makeMainWindow(autosaveName: "MainWindow")
         mainWindow = window
         present(window)
+    }
+
+    func makeMainWindow(initialTab: MainWindowView.Tab = .apps, autosaveName: String?) -> NSWindow {
+        makeWindow(
+            title: "ThorReborn",
+            autosaveName: autosaveName,
+            size: NSSize(width: 520, height: 560),
+            style: [.titled, .closable, .miniaturizable, .resizable],
+            content: MainWindowView(initialTab: initialTab)
+        )
     }
 
     func showOnboarding() {
@@ -60,6 +64,7 @@ final class WindowCoordinator {
             .environmentObject(services.discovery)
             .environmentObject(services.accessibility)
             .environmentObject(services.launchAtLogin)
+            .environmentObject(services.updater)
             .environmentObject(services.commands)
 
         let window = NSWindow(

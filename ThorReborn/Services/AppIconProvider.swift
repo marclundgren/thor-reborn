@@ -16,7 +16,8 @@ final class AppIconProvider {
         }
         let icon: NSImage
         if FileManager.default.fileExists(atPath: bundleURL.path) {
-            icon = NSWorkspace.shared.icon(forFile: bundleURL.path)
+            // Resolve symlinks (e.g. /Applications/Safari.app) so the icon has no alias badge.
+            icon = NSWorkspace.shared.icon(forFile: bundleURL.resolvingSymlinksInPath().path)
         } else {
             icon = Self.fallbackIcon
         }

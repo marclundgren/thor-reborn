@@ -94,19 +94,9 @@
   .btn svg { width: 18px; height: 18px; }
   .meta { margin-top: 16px; font-size: 14px; color: var(--muted); }
 
-  /* Demo */
-  .demo {
-    margin: 48px auto 0; max-width: 560px; text-align: left;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
-    box-shadow: 0 20px 50px rgba(0,0,0,.08); overflow: hidden;
-  }
-  .demo .bar { display: flex; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-  .demo .bar i { width: 12px; height: 12px; border-radius: 50%; background: var(--line); }
-  .row { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-bottom: 1px solid var(--line); }
-  .row:last-child { border-bottom: 0; }
-  .row .app { width: 36px; height: 36px; border-radius: 9px; flex: none; display: grid; place-items: center; font-size: 19px; color: #fff; font-weight: 700; }
-  .row .name { flex: 1; font-weight: 500; }
-  .keys { display: inline-flex; gap: 4px; }
+  /* Screenshot (real app, rendered with its own window shadow) */
+  .shot { display: block; margin: 40px auto 0; width: 100%; max-width: 566px; height: auto; }
+
   kbd {
     display: inline-block; min-width: 28px; padding: 3px 7px; text-align: center;
     font-size: 14px; line-height: 1.4; border-radius: 6px;
@@ -141,7 +131,6 @@
 
   @media (max-width: 560px) {
     nav .links a.hide-sm { display: none; }
-    .row { padding: 12px 14px; gap: 12px; }
     kbd { min-width: 24px; padding: 2px 5px; font-size: 13px; }
     ol.steps li { padding-left: 58px; }
   }
@@ -171,13 +160,10 @@
       </div>
       <p class="meta">Free and open source · macOS 14 or later · Apple Silicon and Intel</p>
 
-      <div class="demo" aria-label="Example shortcut assignments">
-        <div class="bar"><i></i><i></i><i></i></div>
-        <div class="row"><div class="app" style="background:#2b7de9">S</div><div class="name">Safari</div><span class="keys"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd></span></div>
-        <div class="row"><div class="app" style="background:#1f2937">T</div><div class="name">Terminal</div><span class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>T</kbd></span></div>
-        <div class="row"><div class="app" style="background:#e9a23b">N</div><div class="name">Notes</div><span class="keys"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>N</kbd></span></div>
-        <div class="row"><div class="app" style="background:#16a34a">M</div><div class="name">Messages</div><span class="keys"><kbd>⌥</kbd><kbd>⌘</kbd><kbd>M</kbd></span></div>
-      </div>
+      <picture>
+        <source srcset="screenshot-dark.png" media="(prefers-color-scheme: dark)">
+        <img class="shot" src="screenshot-light.png" width="1132" height="1068" alt="The ThorReborn window: a list of apps (Safari, Mail, Messages, Notes, Calendar, Music, Terminal), each with its keyboard shortcut">
+      </picture>
     </header>
   </div>
 

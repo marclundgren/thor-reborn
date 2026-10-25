@@ -6,12 +6,11 @@
 	<key>LSUIElement</key>
 	<true/>
 
-	<!-- Sparkle 2. PLACEHOLDER feed and key: replace both before shipping (see README). -->
+	<!-- Sparkle 2. The private half of this key is in the release maintainer's keychain
+	     (see README › Releasing an update). -->
 	<key>SUFeedURL</key>
-	<string>https://example.com/thorreborn/appcast.xml</string>
+	<string>https://marclundgren.github.io/thor-reborn/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>TD1sNYdS0fNp+xRX47GCYnGbKSNnB6l1vX+N1UHuESc=</string>
-	<key>SUEnableAutomaticChecks</key>
-	<false/>
+	<string>qO+nm0Qvu0ZVuVOZyuq5JX8kUWaqnLEJmFBbyKJF/JM=</string>
 </dict>
 </plist>

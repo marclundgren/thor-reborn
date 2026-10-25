@@ -14,6 +14,8 @@ Release builds are universal (Apple Silicon and Intel) but ad-hoc signed, not no
 xattr -dr com.apple.quarantine /Applications/ThorReborn.app
 ```
 
+From 1.1.0 on, ThorReborn updates itself through Sparkle (Check for Updates in the menu, or automatic checks you can turn on in Settings). Version 1.0.0 shipped with a placeholder feed, so 1.0.0 users need to download a newer version by hand once.
+
 ## Features
 
 - Runs from the menu bar only (no Dock icon). The menu has: Show Apps, Enable/Disable Shortcuts, Export/Import Shortcuts, Check for Updates, the version, Privacy Policy, and Quit.
@@ -58,6 +60,11 @@ Debug builds also contain an end-to-end self-test that drives the real services.
 ```sh
 open -n path/to/Debug/ThorReborn.app --args --self-test /tmp/thor-selftest.txt
 ```
+
+Two more Debug-only modes use the same sandbox:
+
+- `--screenshots <dir>` renders the main window (Apps and Settings tabs, light and dark) with sample apps into PNGs. `docs/screenshot-*.png` come from this.
+- `--update-test <report>` runs a real Sparkle update against the live feed with a headless user interface that accepts everything, and logs each step. Run it on a copy of an older build; Sparkle replaces that copy in place.
 
 ## Permissions
 
@@ -125,13 +132,33 @@ A shortcut made only of modifiers (`"cmd+shift"`) is invalid. The parser rejects
 
 ## Updates (Sparkle)
 
-Check for Updates is wired to Sparkle 2's `SPUStandardUpdaterController`. The values in `Config/Info.plist` are **placeholders**:
+ThorReborn uses Sparkle 2's `SPUStandardUpdaterController`, wrapped in `UpdaterService`. Check for Updates is in the menu bar menu and in Settings, next to an "Automatically check for updates" toggle. If you haven't set that toggle, Sparkle asks on the second launch.
 
-- `SUFeedURL` = `https://example.com/thorreborn/appcast.xml`. Replace it with your real appcast URL.
-- `SUPublicEDKey` is a throwaway Ed25519 public key generated just so Sparkle's configuration check passes. Its private key was never stored. Before shipping, run Sparkle's `generate_keys` tool, put its public key here, and sign updates with `sign_update`.
-- `SUEnableAutomaticChecks` is `false` until a real feed exists.
+- **Feed:** `SUFeedURL` is `https://marclundgren.github.io/thor-reborn/appcast.xml`, which is `docs/appcast.xml` served by GitHub Pages.
+- **Downloads:** each feed item points at the `ThorReborn.zip` asset of a GitHub release.
+- **Signing:** every update is EdDSA-signed. `SUPublicEDKey` in `Config/Info.plist` is the public key. The private key lives only in the maintainer's login keychain, under the account `dev.thorreborn.ThorReborn`. Sparkle refuses any update whose signature doesn't match, which is what makes updating an ad-hoc signed app safe.
 
-Until then, Check for Updates reports that it can't reach the feed.
+### Releasing an update
+
+```sh
+scripts/release.sh 1.2.0 notes.md
+```
+
+The script does the following:
+1. Bumps `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION`. Sparkle compares the build number.
+2. Builds a universal Release app and zips it.
+3. Signs the zip with `sign_update`.
+4. Adds an item to `docs/appcast.xml`, with `notes.md` converted to HTML as the update notes.
+5. Commits and tags, then publishes the GitHub release with the zip.
+6. Pushes, which redeploys the feed.
+
+**Back up the private key.** Without it you can't sign updates, and existing installs can never update again. To export it:
+
+```sh
+<DerivedData>/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys --account dev.thorreborn.ThorReborn -x sparkle-private-key.txt
+```
+
+Store that file in a password manager, then delete it. On a new Mac, import it with `generate_keys --account dev.thorreborn.ThorReborn -f sparkle-private-key.txt`.
 
 ## Project layout
 
@@ -147,7 +174,8 @@ ThorReborn/
   Support/                   AppSettings, shortcut bridging, DEBUG self-test
   Assets.xcassets            App icon (regenerate with `swift scripts/make-app-icon.swift`)
 Packages/ThorRebornCore/     AssignedApp, ThorShortcut (string parse/serialize), AppAssignmentStore + tests
-docs/                        Landing page, served by GitHub Pages
+docs/                        Landing page, screenshots and Sparkle appcast, served by GitHub Pages
+scripts/release.sh           Build, sign and publish a release (see Releasing an update)
 ```
 
 ## License

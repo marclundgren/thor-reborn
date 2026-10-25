@@ -1,7 +1,6 @@
 import AppKit
 import Combine
 import KeyboardShortcuts
-import Sparkle
 import ThorRebornCore
 
 /// The status item, its menu, and the fixed Shift+Control+Option+Command+T hotkey that
@@ -19,22 +18,20 @@ final class MenuBarService: NSObject, NSMenuDelegate {
     private let settings: AppSettings
     private let hotkeys: HotkeyService
     private let actions: Actions
-    private let updaterController: SPUStandardUpdaterController
+    private let updater: UpdaterService
 
     private var statusItem: NSStatusItem?
     private let toggleShortcutsItem = NSMenuItem()
+    private let checkForUpdatesItem = NSMenuItem()
     private let versionItem = NSMenuItem()
     private var toggleHotkeyTask: Task<Void, Never>?
     private var cancellables: Set<AnyCancellable> = []
 
-    init(settings: AppSettings, hotkeys: HotkeyService, actions: Actions) {
+    init(settings: AppSettings, hotkeys: HotkeyService, updater: UpdaterService, actions: Actions) {
         self.settings = settings
         self.hotkeys = hotkeys
+        self.updater = updater
         self.actions = actions
-        // Placeholder feed (see Info.plist / README). Automatic checks are off by default.
-        self.updaterController = SPUStandardUpdaterController(
-            startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil
-        )
         super.init()
     }
 
@@ -91,13 +88,10 @@ final class MenuBarService: NSObject, NSMenuDelegate {
         menu.addItem(item("Import Shortcuts…", #selector(importShortcuts)))
         menu.addItem(.separator())
 
-        let updateItem = NSMenuItem(
-            title: "Check for Updates…",
-            action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)),
-            keyEquivalent: ""
-        )
-        updateItem.target = updaterController
-        menu.addItem(updateItem)
+        checkForUpdatesItem.title = "Check for Updates…"
+        checkForUpdatesItem.target = self
+        checkForUpdatesItem.action = #selector(checkForUpdates)
+        menu.addItem(checkForUpdatesItem)
 
         versionItem.isEnabled = false
         menu.addItem(versionItem)
@@ -121,6 +115,7 @@ final class MenuBarService: NSObject, NSMenuDelegate {
 
     private func updateDynamicTitles() {
         toggleShortcutsItem.title = settings.enableShortcuts ? "Disable Shortcuts" : "Enable Shortcuts"
+        checkForUpdatesItem.isEnabled = updater.canCheckForUpdates
         versionItem.title = Self.formattedVersion
     }
 
@@ -141,6 +136,7 @@ final class MenuBarService: NSObject, NSMenuDelegate {
 
     @objc private func showApps() { actions.showApps() }
     @objc private func toggleShortcuts() { hotkeys.setShortcutsEnabled(!settings.enableShortcuts) }
+    @objc private func checkForUpdates() { updater.checkForUpdates() }
     @objc private func exportShortcuts() { actions.exportShortcuts() }
     @objc private func importShortcuts() { actions.importShortcuts() }
     @objc private func openPrivacyPolicy() { NSWorkspace.shared.open(Self.privacyPolicyURL) }

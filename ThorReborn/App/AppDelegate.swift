@@ -28,9 +28,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         services.hotkeys.start()
         services.deactivateKey.start()
 
+        #if DEBUG
+        let sandbox = SelfTest.Sandbox.fromLaunchArguments()
+        switch sandbox?.mode {
+        case .screenshots?:
+            return Screenshots(services: services, windows: windows, sandbox: sandbox!).run()
+        case .updateTest?:
+            return UpdateTest(sandbox: sandbox!).run()
+        default:
+            break
+        }
+        #endif
+
+        services.updater.start()
         let menuBar = MenuBarService(
             settings: services.settings,
             hotkeys: services.hotkeys,
+            updater: services.updater,
             actions: .init(
                 showApps: { [weak self] in self?.windows.showMainWindow() },
                 exportShortcuts: { [weak self] in self?.services.importExport.exportAssignments() },
@@ -52,7 +66,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         logger.info("Launched with \(self.services.store.apps.count) assigned apps")
 
         #if DEBUG
-        if let sandbox = SelfTest.Sandbox.fromLaunchArguments() {
+        if let sandbox, sandbox.mode == .selfTest {
             let selfTest = SelfTest(services: services, menuBar: menuBar, sandbox: sandbox)
             Task { await selfTest.run() }
         }

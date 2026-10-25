@@ -6,6 +6,7 @@ struct SettingsView: View {
     @EnvironmentObject private var launchAtLogin: LaunchAtLoginService
     @EnvironmentObject private var accessibility: AccessibilityService
     @EnvironmentObject private var commands: AppCommands
+    @EnvironmentObject private var updater: UpdaterService
 
     @State private var launchAtLoginError: String?
 
@@ -72,10 +73,19 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Updates") {
+                Toggle("Automatically check for updates", isOn: Binding(
+                    get: { updater.automaticallyChecksForUpdates },
+                    set: { updater.automaticallyChecksForUpdates = $0 }
+                ))
+                LabeledContent(MenuBarService.formattedVersion) {
+                    Button("Check Now") { updater.checkForUpdates() }
+                        .disabled(!updater.canCheckForUpdates)
+                }
+            }
+
             Section {
                 HStack {
-                    Text(MenuBarService.formattedVersion)
-                        .foregroundStyle(.secondary)
                     Spacer()
                     Button("Quit ThorReborn") { commands.quit() }
                 }

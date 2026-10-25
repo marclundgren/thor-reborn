@@ -16,7 +16,16 @@ import ThorRebornCore
 /// on and back off, and skips it if it was already on.)
 @MainActor
 struct SelfTest {
+    /// Every DEBUG harness mode runs against this sandbox. Each takes one path argument:
+    /// the report file, or for `--screenshots` the output directory.
     struct Sandbox {
+        enum Mode: String, CaseIterable {
+            case selfTest = "--self-test"
+            case screenshots = "--screenshots"
+            case updateTest = "--update-test"
+        }
+
+        let mode: Mode
         let directory: URL
         let reportURL: URL
         let defaultsSuite: String
@@ -26,16 +35,20 @@ struct SelfTest {
 
         static func fromLaunchArguments() -> Sandbox? {
             let arguments = ProcessInfo.processInfo.arguments
-            guard let index = arguments.firstIndex(of: "--self-test"), arguments.indices.contains(index + 1) else {
-                return nil
+            for mode in Mode.allCases {
+                guard let index = arguments.firstIndex(of: mode.rawValue), arguments.indices.contains(index + 1) else {
+                    continue
+                }
+                let directory = FileManager.default.temporaryDirectory
+                    .appending(path: "ThorRebornSelfTest-\(ProcessInfo.processInfo.processIdentifier)")
+                return Sandbox(
+                    mode: mode,
+                    directory: directory,
+                    reportURL: URL(filePath: arguments[index + 1]),
+                    defaultsSuite: "dev.thorreborn.ThorReborn.selftest"
+                )
             }
-            let directory = FileManager.default.temporaryDirectory
-                .appending(path: "ThorRebornSelfTest-\(ProcessInfo.processInfo.processIdentifier)")
-            return Sandbox(
-                directory: directory,
-                reportURL: URL(filePath: arguments[index + 1]),
-                defaultsSuite: "dev.thorreborn.ThorReborn.selftest"
-            )
+            return nil
         }
 
         func cleanUp() {
