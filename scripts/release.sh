@@ -143,7 +143,7 @@ TAP=../homebrew-thor-reborn
 if [[ -d $TAP ]]; then
   SHA_ARM=$(shasum -a 256 $DMG_ARM | cut -d' ' -f1)
   SHA_INTEL=$(shasum -a 256 $DMG_INTEL | cut -d' ' -f1)
-  sed -i '' -E "s/^  version \".*\"/  version \"$VERSION\"/; s/^  sha256 arm: \"[0-9a-f]*\"/  sha256 arm: \"$SHA_ARM\"/; s/^        intel: \"[0-9a-f]*\"/        intel: \"$SHA_INTEL\"/" $TAP/Casks/thorreborn.rb
+  sed -i '' -E "s/^  version \".*\"/  version \"$VERSION\"/; s/^  sha256 arm: +\"[0-9a-f]*\"/  sha256 arm:   \"$SHA_ARM\"/; s/^        intel: \"[0-9a-f]*\"/        intel: \"$SHA_INTEL\"/" $TAP/Casks/thorreborn.rb
   git -C $TAP commit -q -am "thorreborn $VERSION" && git -C $TAP push -q
 else
   echo "==> No tap at $TAP; skipped the Homebrew cask." >&2
