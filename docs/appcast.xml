@@ -8,6 +8,15 @@
     <language>en</language>
     <!-- releases, newest first -->
     <item>
+      <title>1.2.0</title>
+      <pubDate>Tue, 03 Nov 2026 04:08:48 GMT</pubDate>
+      <sparkle:version>4</sparkle:version>
+      <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<h3>Added</h3><ul><li>Separate downloads for Apple Silicon and Intel Macs, as disk images (.dmg).</li><li>Install with Homebrew: brew install --cask marclundgren/thor-reborn/thorreborn</li></ul>]]></description>
+      <enclosure url="https://github.com/marclundgren/thor-reborn/releases/download/v1.2.0/ThorReborn.zip" type="application/octet-stream" sparkle:edSignature="SV91olLr1XHUA2CGGUdtodRODIVErAiMwNwB1b7B3llsyHQo1aFFZiGNooRTrmvI73W3UthvvjtbXjLltChVBw==" length="2275561"/>
+    </item>
+    <item>
       <title>1.1.1</title>
       <pubDate>Sun, 25 Oct 2026 07:19:42 GMT</pubDate>
       <sparkle:version>3</sparkle:version>
