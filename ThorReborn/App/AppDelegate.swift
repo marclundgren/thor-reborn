@@ -116,6 +116,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 if trusted {
                     logger.info("Accessibility permission granted")
                     services.deactivateKey.reinstallMonitors()
+                    windows.closeOnboarding()
                 } else {
                     logger.warning("Accessibility permission revoked; showing onboarding")
                     windows.showOnboarding()

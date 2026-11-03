@@ -42,6 +42,10 @@ final class WindowCoordinator {
         present(window)
     }
 
+    func closeOnboarding() {
+        onboardingWindow?.close()
+    }
+
     private func present(_ window: NSWindow) {
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
