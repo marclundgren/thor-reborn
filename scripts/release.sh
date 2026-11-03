@@ -3,8 +3,13 @@
 #
 #   scripts/release.sh 1.2.0 notes.md
 #
-# notes.md is Markdown (paragraphs and "- " bullets). It becomes the GitHub release notes
-# and, converted to HTML, the update notes Sparkle shows in the app.
+# notes.md is Markdown: "## Added / Changes / Fixes" headings, paragraphs and "- " bullets.
+# It becomes the GitHub release notes (under a download table) and, converted to HTML,
+# the update notes Sparkle shows in the app.
+#
+# Release assets: ThorReborn-<version>-aarch64.dmg and -x86_64.dmg for people (and the
+# Homebrew cask), ThorReborn.zip (universal) for Sparkle and the landing page.
+# If ../homebrew-thor-reborn exists, the cask there is updated and pushed too.
 #
 # Needs: Xcode, `gh` logged in, and two things in the login keychain: the Sparkle EdDSA
 # private key (account dev.thorreborn.ThorReborn) and the self-signed code signing
@@ -51,6 +56,26 @@ ZIP=$DD/ThorReborn.zip
 rm -f $ZIP
 ditto -c -k --sequesterRsrc --keepParent $APP $ZIP
 
+# One DMG per architecture, like RustDesk: ThorReborn-<version>-aarch64.dmg / -x86_64.dmg.
+make_dmg() {  # <arch for xcodebuild> <arch for file name>
+  local build_arch=$1 name_arch=$2
+  local dd=build/release-$name_arch
+  xcodebuild -scheme ThorReborn -configuration Release -destination 'generic/platform=macOS' \
+    -derivedDataPath $dd ARCHS=$build_arch ONLY_ACTIVE_ARCH=NO build | grep -E '(error|BUILD)' || true
+  local app=$dd/Build/Products/Release/ThorReborn.app
+  codesign --force --deep --preserve-metadata=entitlements -s "$SIGN_IDENTITY" $app
+  codesign --verify --deep --strict $app
+  local stage=$dd/dmg dmg=$DD/ThorReborn-$VERSION-$name_arch.dmg
+  rm -rf $stage $dmg && mkdir -p $stage
+  cp -R $app $stage/
+  ln -s /Applications $stage/Applications
+  hdiutil create -quiet -volname "ThorReborn $VERSION" -srcfolder $stage -ov -format UDZO $dmg
+}
+make_dmg arm64 aarch64
+make_dmg x86_64 x86_64
+DMG_ARM=$DD/ThorReborn-$VERSION-aarch64.dmg
+DMG_INTEL=$DD/ThorReborn-$VERSION-x86_64.dmg
+
 # EdDSA signature for Sparkle; prints: sparkle:edSignature="…" length="…"
 SIGN_UPDATE=$DD/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update
 SIGNATURE=$($SIGN_UPDATE --account $KEY_ACCOUNT $ZIP)
@@ -62,6 +87,12 @@ version, build, signature, notes_path, repo = sys.argv[1:]
 lines = pathlib.Path(notes_path).read_text().strip().splitlines()
 parts, bullets = [], []
 for line in lines + [""]:
+    if line.startswith("## "):
+        if bullets:
+            parts.append("<ul>" + "".join(bullets) + "</ul>")
+            bullets = []
+        parts.append(f"<h3>{html.escape(line[3:])}</h3>")
+        continue
     if line.startswith("- "):
         bullets.append(f"<li>{html.escape(line[2:])}</li>")
         continue
@@ -91,5 +122,30 @@ git add $PROJECT docs/appcast.xml
 git commit -q -m "Release $VERSION"
 git tag "v$VERSION"
 git push -q origin HEAD "v$VERSION"
-gh release create "v$VERSION" $ZIP --repo $REPO --title "ThorReborn $VERSION" --notes-file "$NOTES" --verify-tag
+BASE=https://github.com/$REPO/releases/download/v$VERSION
+FULL_NOTES=$DD/release-notes.md
+cat > $FULL_NOTES <<TABLE
+| macOS | Download |
+|---|---|
+| Apple Silicon (M1 and later) | [ThorReborn-$VERSION-aarch64.dmg]($BASE/ThorReborn-$VERSION-aarch64.dmg) |
+| Intel | [ThorReborn-$VERSION-x86_64.dmg]($BASE/ThorReborn-$VERSION-x86_64.dmg) |
+
+Or with Homebrew: \`brew install --cask marclundgren/thor-reborn/thorreborn\`
+
+Not notarized, so macOS asks you to approve the first launch. See the [README](https://github.com/$REPO#download).
+
+TABLE
+cat "$NOTES" >> $FULL_NOTES
+gh release create "v$VERSION" $DMG_ARM $DMG_INTEL $ZIP --repo $REPO --title "ThorReborn $VERSION" --notes-file $FULL_NOTES --verify-tag
+
+# Homebrew tap (separate repo, cloned next to this one).
+TAP=../homebrew-thor-reborn
+if [[ -d $TAP ]]; then
+  SHA_ARM=$(shasum -a 256 $DMG_ARM | cut -d' ' -f1)
+  SHA_INTEL=$(shasum -a 256 $DMG_INTEL | cut -d' ' -f1)
+  sed -i '' -E "s/^  version \".*\"/  version \"$VERSION\"/; s/^  sha256 arm: \"[0-9a-f]*\"/  sha256 arm: \"$SHA_ARM\"/; s/^        intel: \"[0-9a-f]*\"/        intel: \"$SHA_INTEL\"/" $TAP/Casks/thorreborn.rb
+  git -C $TAP commit -q -am "thorreborn $VERSION" && git -C $TAP push -q
+else
+  echo "==> No tap at $TAP; skipped the Homebrew cask." >&2
+fi
 echo "==> Published. The feed updates when GitHub Pages redeploys (about a minute)."

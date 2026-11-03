@@ -6,9 +6,15 @@ ThorReborn is a from-scratch rewrite of [Thor](https://github.com/gbammc/Thor) b
 
 ## Download
 
-Get **[ThorReborn.zip](https://github.com/marclundgren/thor-reborn/releases/latest/download/ThorReborn.zip)** from the [latest release](https://github.com/marclundgren/thor-reborn/releases/latest), unzip it, and move ThorReborn.app to Applications. Website: https://marclundgren.github.io/thor-reborn/
+Grab the DMG for your Mac from the [latest release](https://github.com/marclundgren/thor-reborn/releases/latest) (Apple Silicon: `ThorReborn-<version>-aarch64.dmg`, Intel: `ThorReborn-<version>-x86_64.dmg`), open it, and drag ThorReborn to Applications. Website: https://marclundgren.github.io/thor-reborn/
 
-Release builds are universal (Apple Silicon and Intel), signed with a self-signed certificate rather than an Apple Developer ID, and not notarized, so macOS blocks the first launch. Open the app once, then click **Open Anyway** in System Settings › Privacy & Security. Or run:
+Or with [Homebrew](https://brew.sh):
+
+```sh
+brew install --cask marclundgren/thor-reborn/thorreborn
+```
+
+Release builds are signed with a self-signed certificate rather than an Apple Developer ID, and not notarized, so macOS blocks the first launch. Open the app once, then click **Open Anyway** in System Settings › Privacy & Security. Or run:
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/ThorReborn.app
