@@ -8,6 +8,15 @@
     <language>en</language>
     <!-- releases, newest first -->
     <item>
+      <title>1.2.1</title>
+      <pubDate>Tue, 03 Nov 2026 05:14:57 GMT</pubDate>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>1.2.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<h3>Fixes</h3><ul><li>The Accessibility access window now closes by itself once you turn access on, instead of waiting for you to click Done.</li></ul>]]></description>
+      <enclosure url="https://github.com/marclundgren/thor-reborn/releases/download/v1.2.1/ThorReborn.zip" type="application/octet-stream" sparkle:edSignature="zb0eB2d7OkMuxqLKUNnclKH4amBe6g2pjbM0foKZB8SSl4gTaUx6JsPcT7aJgTHNydcZQWbE12zEZuZjdCVACQ==" length="2275708"/>
+    </item>
+    <item>
       <title>1.2.0</title>
       <pubDate>Tue, 03 Nov 2026 04:08:48 GMT</pubDate>
       <sparkle:version>4</sparkle:version>
